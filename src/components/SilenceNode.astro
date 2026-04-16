@@ -1,0 +1,67 @@
+---
+import type { TimelineItem } from '../data/timeline';
+
+interface Props {
+  item: Extract<TimelineItem, { type: 'silence' }>;
+}
+
+const { item } = Astro.props;
+
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN',
+                 'JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function fmtDate(str: string) {
+  const [y, m] = str.split('-');
+  return m ? `${MONTHS[+m - 1]} ${y}` : y;
+}
+
+const rangeLabel = item.dateTo
+  ? `${fmtDate(item.date)} → ${fmtDate(item.dateTo)}`
+  : fmtDate(item.date);
+---
+
+<div class="silence-node reveal" role="listitem">
+  <!-- Trigger: hover (CSS) + click (JS for touch) -->
+  <div
+    class="silence-trigger"
+    tabindex="0"
+    role="button"
+    aria-expanded="false"
+    aria-label={`空白期：${rangeLabel}`}
+  >
+    <span class="silence-range">{rangeLabel}</span>
+    <div class="silence-dash-line" aria-hidden="true"></div>
+  </div>
+
+  <!-- Expandable body -->
+  <div class="silence-body">
+    <div class="silence-inner">
+      <div class="silence-note-box">
+        {item.note
+          ? <p class="silence-note-text">&ldquo;{item.note}&rdquo;</p>
+          : <p class="silence-empty-text">// no log entry</p>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Click/keyboard toggle for touch & accessibility
+  document.querySelectorAll<HTMLElement>('.silence-trigger').forEach(trigger => {
+    const node = trigger.closest<HTMLElement>('.silence-node')!;
+
+    function toggle() {
+      const open = node.classList.toggle('open');
+      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    trigger.addEventListener('click', toggle);
+    trigger.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  });
+</script>

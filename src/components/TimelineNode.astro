@@ -1,0 +1,47 @@
+---
+import type { TimelineItem } from '../data/timeline';
+
+interface Props {
+  item: Extract<TimelineItem, { type: 'photo' | 'project' }>;
+}
+
+const { item } = Astro.props;
+const isProject = item.type === 'project';
+
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN',
+                 'JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function fmtDate(str: string) {
+  const [y, m] = str.split('-');
+  return m ? `${MONTHS[+m - 1]} ${y}` : y;
+}
+---
+
+<div class:list={['timeline-node reveal', `type-${item.type}`]} role="listitem">
+  <div class="node-card">
+    <div class="node-tag">{isProject ? 'PROJECT_LOG' : 'PHOTO_LOG'}</div>
+    <div class="node-title">{item.title}</div>
+    <div class="node-date">{fmtDate(item.date)}</div>
+    <div class="node-desc">{item.description}</div>
+
+    {item.cover && (
+      <img
+        class="node-cover"
+        src={item.cover}
+        alt={item.title}
+        loading="lazy"
+      />
+    )}
+
+    {item.link && (
+      <a
+        class="node-link"
+        href={item.link}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        &rarr; VIEW SOURCE
+      </a>
+    )}
+  </div>
+</div>
